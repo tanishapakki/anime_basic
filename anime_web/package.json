@@ -1,13 +1,13 @@
 
 {
-  "homepage": "https://tanishapakki.github.io/anime_basic"
+  "homepage": "https://tanishapakki.github.io/anime_basic",
   "name": "anime_web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "predeploy": "npm run build",
-"deploy": "gh-pages -d build"
+"deploy": "gh-pages -d build",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
