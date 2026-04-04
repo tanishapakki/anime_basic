@@ -1,17 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Enhanced AnimeFunSite — UI improvements
-// - Dark/light toggle (persisted)
-// - Improved header with logo area
-// - Search + filter row redesigned with icons
-// - Card hover animations, badges, and subtle shadows
-// - Skeleton loading for grid
-// - Better responsive layout and spacing
-// - Accessible buttons and aria labels
 
 export default function AnimeFunSite() {
   const [animeList, setAnimeList] = useState([]);
+  const [likedAnime, setLikedAnime] = useState([]);
+  const isLiked = likedAnime.some((a) => a.id === a.id);
   const [filtered, setFiltered] = useState([]);
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -32,7 +26,13 @@ export default function AnimeFunSite() {
     document.documentElement.classList.toggle("light", theme === "light");
     localStorage.setItem("af_theme", theme);
   }, [theme]);
-
+  function handleLike(anime) {
+    setLikedAnime((prev) => {
+      // avoid duplicates
+      if (prev.find((a) => a.id === anime.id)) return prev;
+      return [...prev, anime];
+    });
+  }
   async function fetchPage(p = 1) {
     setLoading(true);
     setError(null);
@@ -212,7 +212,7 @@ export default function AnimeFunSite() {
   // small UI helpers
   function SkeletonCard() {
     return (
-      <div className="animate-pulse rounded-xl overflow-hidden bg-white/4 p-4">
+      <div className="animate-pulse rounded-xl overflow-hidden bg-gray-900 p-4">
         <div className="h-44 bg-white/6 rounded-md mb-3" />
         <div className="h-4 bg-white/6 rounded w-3/4 mb-2" />
         <div className="h-3 bg-white/6 rounded w-1/2" />
@@ -221,7 +221,7 @@ export default function AnimeFunSite() {
   }
 
   return (
-    <div className="min-h-screen p-6 bg-maroon text-gray-100">
+      <div className="min-h-screen p-6 bg-[#020617] text-gray-200">
       <header className="max-w-7xl mx-auto flex items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-white/10">
@@ -246,14 +246,13 @@ export default function AnimeFunSite() {
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="px-3 py-2 rounded-lg bg-white/6 hover:bg-white/10"
-          >
+            className="px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition"          >
             {theme === "dark" ? "Light" : "Dark"}
           </button>
 
           <button
             onClick={clearCache}
-            className="px-3 py-2 rounded-lg bg-indigo-500 text-white"
+            className="px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition text-white"
             title="Clear cache and reload"
           >
             Refresh
@@ -262,8 +261,7 @@ export default function AnimeFunSite() {
       </header>
 
       <main className="max-w-7xl mx-auto">
-        <section className="bg-white rounded-2xl p-4 mb-6 shadow-xl backdrop-blur-sm">
-          <div className="flex flex-col md:flex-row md:items-center gap-3 ">
+        <section className="bg-[#111827] rounded-2xl p-4 mb-6 border border-gray-800">          <div className="flex flex-col md:flex-row md:items-center gap-3 ">
             <div className="relative flex-1">
               <svg className="absolute left-3 top-3 opacity-60" width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -273,15 +271,14 @@ export default function AnimeFunSite() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search anime by title..."
-                className="w-full pl-10 pr-4 py-3 rounded-lg bg-black placeholder:text-gray-300 outline-none"
-              />
+                className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-purple-600"              />
             </div>
 
             <div className="flex items-center gap-2">
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="px-3 py-2 rounded-lg bg-gray-400"
+                className="px-3 py-2 rounded-lg bg-gray-900 text-gray-200 border border-gray-700"
                 aria-label="Filter by type"
               >
                 <option value="all">All types</option>
@@ -314,7 +311,7 @@ export default function AnimeFunSite() {
                     layout
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.99 }}
-                    className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-white/4 to-white/6 shadow-lg hover:shadow-2xl transition-shadow"
+                    className="relative rounded-2xl overflow-hiddenbg-[#111827] border border-gray-800 shadow-lg hover:border-purple-600 transition-all transition-shadow"
                   >
                     <div className="relative">
                       <img
@@ -329,7 +326,7 @@ export default function AnimeFunSite() {
                       />
 
                       <div className="absolute left-3 top-3 bg-black/50 px-2 py-1 rounded-full text-xs">#{a.rank ?? "-"}</div>
-                      <div className="absolute right-3 top-3 bg-indigo-500 px-2 py-1 rounded-full text-xs">{a.type}</div>
+                      <div className="absolute right-3 top-3 bg-purple-600 px-2 py-1 rounded-full text-xs">{a.type}</div>
                     </div>
 
                     <div className="p-4 flex flex-col gap-3">
@@ -344,9 +341,12 @@ export default function AnimeFunSite() {
                         <div className="text-xs text-gray-300">{a.episodes} eps</div>
 
                         <div className="flex items-center gap-2">
+                          <button onClick={() => handleLike(a)}>
+                            {isLiked ? "❤️ Liked" : "🤍 Like"}
+                          </button>
                           <button
                             onClick={() => setSelected(a.id)}
-                            className="px-3 py-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-sm text-white"
+                            className="px-3 py-1 rounded-full bg-purple-600 hover:bg-purple-500 transition text-sm text-white"
                             aria-label={`View details for ${a.title}`}
                           >
                             View
@@ -354,7 +354,7 @@ export default function AnimeFunSite() {
 
                           <button
                             onClick={() => navigator.clipboard?.writeText(a.title)}
-                            className="px-3 py-1 rounded-full bg-white/6 text-sm"
+                            className="px-3 py-1 rounded-full  bg-gray-800 hover:bg-gray-700 transition text-sm"
                             aria-label={`Copy title ${a.title}`}
                           >
                             Copy
@@ -372,7 +372,7 @@ export default function AnimeFunSite() {
             {!loading && hasMore && (
               <button
                 onClick={onLoadMore}
-                className="px-6 py-3 rounded-full bg-pink text-white shadow-lg hover:brightness-105"
+                className="px-6 py-3 rounded-full bg-purple-600 hover:bg-purple-500 transition text-white shadow-lg hover:brightness-105"
               >
                 Load more
               </button>
@@ -432,7 +432,7 @@ export default function AnimeFunSite() {
                       href={detail?.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-4 py-2 rounded-lg bg-indigo text-white text-sm"
+                      className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm"
                     >
                       Open on MyAnimeList
                     </a>
